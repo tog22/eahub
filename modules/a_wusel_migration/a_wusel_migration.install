@@ -1,0 +1,13 @@
+<?php
+/**
+* @file
+* Implements hook_disable().
+*
+* the migration module should deregister its migrations
+*/
+function a_wusel_migration_disable() {
+  // based on: drupal.org/node/1418350#comment-5557772
+  Migration::deregisterMigration('Wusel_Step1_User');
+  Migration::deregisterMigration('Wusel_Step2_Memberlist');
+}
+?>

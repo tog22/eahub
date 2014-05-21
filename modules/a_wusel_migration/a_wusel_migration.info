@@ -1,0 +1,15 @@
+name = "A Wusel Migration"
+description = "Importing a CSV file as new users, each with Profile2 fields"
+package = Migration
+dependencies[] = migrate (>2.5)
+dependencies[] = migrate_extras
+dependencies[] = profile2
+; only for the 'Date'-field 'Birthday':
+;dependencies[] = date (>=2.7)
+;dependencies[] = date_api
+; include the Classes file
+files[] = a_wusel_migration.migrate.inc
+; TIP: to show the migrate user interface delete the ";" at the beginning of the next line (or use drush)
+;dependencies[] = migrate_ui
+version = "7.x-1.2"
+core = 7.x
