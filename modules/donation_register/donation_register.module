@@ -35,16 +35,7 @@ function donation_register_views_pre_render(&$view) {
 		mysql_select_db("DB_REPLACE",$db); // **NB** Check this is the right database, and change it when switch to ***live*** site
 		mysql_set_charset('utf8',$db); 
 		
-		/* NEW PLAN:
-		- fetch user id order in my custom mysql way and then apply it
-		*/
-		
-		// - fetch user id order in my custom mysql way
-		/*
-		global $users_main;
-		$users_main = array();
-		$find_users_key1_by_uid = array();
-		*/
+		/* fetch user id order in my custom mysql way and then apply it */
 		global $find_users_weight_by_uid;
 		$find_users_weight_by_uid = array();
 		$result = mysql_query("SELECT profile.uid, field_data_field_weighting.field_weighting_value FROM profile
@@ -53,66 +44,15 @@ function donation_register_views_pre_render(&$view) {
 		");
 		$i = 0; // have $i be key to preserve ORDER BY
 		while ($row = mysql_fetch_row($result)) {
-			// The uid is the test for merging. It doesn't need to be a bottom-level key, as it's not the test-condition for mergi ????
-			//$users_main[$i]['uid'] = $row[0]; // have $i be key to preserve ORDER BY
-			// $users_main[$i]['weight'] = $row[1]; // have $i be key to preserve ORDER BY
-			//$find_users_key1_by_uid[$row[0]] = $i;
+			// The uid is the test for merging. It doesn't need to be a bottom-level key, as it's not the test-condition for merging
 			$find_users_weight_by_uid[$row[0]] = $row[1];
 			$i++;
 		}
 		
-		// 
 		usort($view->result, 'supportfunc_sort_view_result');
 		file_put_contents($log, print_r($view->result, TRUE), FILE_APPEND);
 
 
-		/* commented out cos exceeds max execution time
-		$transfer_array1 = array();
-		$i = 0;
-		foreach ($users_main as $user_main) {
-			while ($i <= max(array_keys($view->result))) { // not a for loop, so $i is accessible within
-				if ($view->result[$i]->uid == $user_main['uid']) {
-					$transfer_array1[] = clone $view->result[$i];
-				}
-			}
-		}
-		
-		file_put_contents($log, print_r($transfer_array1, TRUE), FILE_APPEND);
-		
-		*/
-		
-		
-		
-		
-		/* OLD PLAN:
-		- loop though v-r by i-increment
-			- while doing so, create transfer_array1 with weight the key and i the value, then sort by key (ksort())
-				- ACTUALLY, MAY NEED TO MAKE user_id THE VALUE, OR AN ADDITIONAL VALUE
-		- recreate result with transfer_array2[] = clone v-r[transfer_array[weight]]
-		- overwrite v-r: v-r = transfer_array2[]
-		
-		
-		
-		
-		$transfer_array1 = array();
-		$i = 0;
-		while ($i <= max(array_keys($view->result))) { // not a for loop, so $i is accessible within
-			//$debug_array_or_object = $view->result[$i]->_field_data['profile_users_pid']['entity'];
-			if (isset($view->result[$i]->_field_data['profile_users_pid']['entity']->field_weighting)) {
-				$weight = $view->result[$i]->_field_data['profile_users_pid']['entity']->field_weighting['und'][0]['value'];
-				file_put_contents($log, "$weight \n", FILE_APPEND);
-				$transfer_array1[$weight] = $i; // actually make this either user id or even better $i for the 'donations' profile 
-			}
-			$i++;
-		}
-		
-		$transfer_array2 = array();
-		foreach ($transfer_array1 as $to_transfer) {
-			
-		}
-		/OLD PLAN CODE
-		*/
 		
 	}
-//	$view->result = $view->result;
 }
