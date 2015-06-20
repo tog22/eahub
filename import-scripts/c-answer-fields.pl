@@ -25,14 +25,22 @@ $csvoutput =
 
 # record duplicate rows already fixed
 ## note these get fixed by putting the right row in old-mids, manually if necessary. $fixedDupes doesn't specify that a dupe gets ignored - that gets taken of by its being in old-mids.
-print "Reading old results CSV and duplicate rows already fixed...\n";
+print "Reading old results CSV, already processed SIDs, and duplicate rows already fixed...\n";
 my %fixedDupes;
-open my $fixedDupesIn, 'd-fixed-dupes.txt'; # for tom: /for-time-machine/Projects/survey/perl/d-fixed-dupes.txt
-foreach $fixedDupRowNum (<$fixedDupesIn>) {
+open my $fixedDupesFile, 'd-fixed-dupes.txt'; # for tom: /for-time-machine/Projects/survey/perl/d-fixed-dupes.txt
+foreach $fixedDupRowNum (<$fixedDupesFile>) {
 	chomp($fixedDupRowNum);
 	$fixedDupes{$fixedDupRowNum} = 1;
 }
-close $fixedDupesIn;
+close $fixedDupesFile;
+
+my %alreadyProcessedSIDs;
+open my $alreadyProcessedSIDsFile, 'e-sids-already-processed.txt'; 
+foreach $alreadyProcessedSID (<$alreadyProcessedSIDsFile>) {
+	chomp($alreadyProcessedSID);
+	$alreadyProcessedSIDs{$alreadyProcessedSID} = 1;
+}
+close $alreadyProcessedSIDsFile;
 
 # get list of old MIDs to assign to people
 my $old_mids_csv = Text::CSV->new(
@@ -162,6 +170,12 @@ while ( my $row = $csv->getline($fh) ) {
     
     ##### Skip line if already in old-mids
     if ( exists $mids_in_remote_import{$email} ) {
+    	#TODO: for rows added from now on, trigger an ACTION so Tanja can merge in any added data
+    	#  plan i think'll work:
+    	#  - 
+    	if (!$alreadyProcessedSIDs{$row->[0]}) {
+    		print "ACTION:  Ensure the best row is in old-mids for  duplicate email $email on row $rownum, SID ".$row->[0]." (later rows not in results)\n";
+    	}
     	#debug
     	if ($fullDebug) {
     		print "NOTICE: skipped as email already in old-mids ($email)\n";
