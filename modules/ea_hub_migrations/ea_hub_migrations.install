@@ -1,0 +1,10 @@
+<?php
+/**
+* @file
+* Implements hook_disable().
+*
+* the migration module should deregister its migrations
+*/
+function ea_hub_migrations_migration_disable() {
+  Migration::deregisterMigration('EA_Group_Migration');
+}

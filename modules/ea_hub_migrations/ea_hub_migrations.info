@@ -1,0 +1,15 @@
+name = "EA Hub migrataions"
+description = "Migrations for EffectiveAltruismHub.com"
+package = "Migration"
+core = 7.x
+
+dependencies[] = migrate (>2.5)
+
+; include the Classes file
+files[] = ea_hub_migrations.migrate.inc
+files[] = ea_hub_migrations.module
+
+; Information added by drupal.org packaging script on 2013-06-26
+version = "7.x"
+core = "7.x"
+
