@@ -1,0 +1,93 @@
+$view = new view();
+$view->name = 'planned_donations';
+$view->description = '';
+$view->tag = 'default';
+$view->base_table = 'users';
+$view->human_name = 'Planned donations';
+$view->core = 7;
+$view->api_version = '3.0';
+$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+/* Display: Master */
+$handler = $view->new_display('default', 'Master', 'default');
+$handler->display->display_options['title'] = 'Planned donations';
+$handler->display->display_options['css_class'] = 'donation-register-list';
+$handler->display->display_options['use_more_always'] = FALSE;
+$handler->display->display_options['access']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['query']['type'] = 'views_query';
+$handler->display->display_options['exposed_form']['type'] = 'basic';
+$handler->display->display_options['pager']['type'] = 'full';
+$handler->display->display_options['pager']['options']['items_per_page'] = '15';
+$handler->display->display_options['pager']['options']['offset'] = '0';
+$handler->display->display_options['pager']['options']['id'] = '0';
+$handler->display->display_options['pager']['options']['quantity'] = '9';
+$handler->display->display_options['style_plugin'] = 'default';
+$handler->display->display_options['row_plugin'] = 'fields';
+/* Relationship: User: Profile */
+$handler->display->display_options['relationships']['profile']['id'] = 'profile';
+$handler->display->display_options['relationships']['profile']['table'] = 'users';
+$handler->display->display_options['relationships']['profile']['field'] = 'profile';
+/* Field: User: Name */
+$handler->display->display_options['fields']['name']['id'] = 'name';
+$handler->display->display_options['fields']['name']['table'] = 'users';
+$handler->display->display_options['fields']['name']['field'] = 'name';
+$handler->display->display_options['fields']['name']['label'] = '';
+$handler->display->display_options['fields']['name']['alter']['word_boundary'] = FALSE;
+$handler->display->display_options['fields']['name']['alter']['ellipsis'] = FALSE;
+/* Field: Profile: How much do you plan to donate? */
+$handler->display->display_options['fields']['field_do_you_plan_to_donate_a_ce']['id'] = 'field_do_you_plan_to_donate_a_ce';
+$handler->display->display_options['fields']['field_do_you_plan_to_donate_a_ce']['table'] = 'field_data_field_do_you_plan_to_donate_a_ce';
+$handler->display->display_options['fields']['field_do_you_plan_to_donate_a_ce']['field'] = 'field_do_you_plan_to_donate_a_ce';
+$handler->display->display_options['fields']['field_do_you_plan_to_donate_a_ce']['relationship'] = 'profile';
+$handler->display->display_options['fields']['field_do_you_plan_to_donate_a_ce']['label'] = 'Plans to donate';
+$handler->display->display_options['fields']['field_do_you_plan_to_donate_a_ce']['hide_empty'] = TRUE;
+/* Field: Profile: To which causes? */
+$handler->display->display_options['fields']['field_if_so_to_which_causes_']['id'] = 'field_if_so_to_which_causes_';
+$handler->display->display_options['fields']['field_if_so_to_which_causes_']['table'] = 'field_data_field_if_so_to_which_causes_';
+$handler->display->display_options['fields']['field_if_so_to_which_causes_']['field'] = 'field_if_so_to_which_causes_';
+$handler->display->display_options['fields']['field_if_so_to_which_causes_']['relationship'] = 'profile';
+$handler->display->display_options['fields']['field_if_so_to_which_causes_']['label'] = 'To';
+$handler->display->display_options['fields']['field_if_so_to_which_causes_']['hide_empty'] = TRUE;
+$handler->display->display_options['fields']['field_if_so_to_which_causes_']['delta_offset'] = '0';
+/* Field: Profile: For how long? */
+$handler->display->display_options['fields']['field_if_so_until_when_']['id'] = 'field_if_so_until_when_';
+$handler->display->display_options['fields']['field_if_so_until_when_']['table'] = 'field_data_field_if_so_until_when_';
+$handler->display->display_options['fields']['field_if_so_until_when_']['field'] = 'field_if_so_until_when_';
+$handler->display->display_options['fields']['field_if_so_until_when_']['relationship'] = 'profile';
+$handler->display->display_options['fields']['field_if_so_until_when_']['label'] = 'Until';
+$handler->display->display_options['fields']['field_if_so_until_when_']['hide_empty'] = TRUE;
+/* Field: Profile: Any additional information about the donation plans above */
+$handler->display->display_options['fields']['field_would_you_like_to_give_any']['id'] = 'field_would_you_like_to_give_any';
+$handler->display->display_options['fields']['field_would_you_like_to_give_any']['table'] = 'field_data_field_would_you_like_to_give_any';
+$handler->display->display_options['fields']['field_would_you_like_to_give_any']['field'] = 'field_would_you_like_to_give_any';
+$handler->display->display_options['fields']['field_would_you_like_to_give_any']['relationship'] = 'profile';
+$handler->display->display_options['fields']['field_would_you_like_to_give_any']['label'] = 'Additional information';
+$handler->display->display_options['fields']['field_would_you_like_to_give_any']['hide_empty'] = TRUE;
+/* Field: User: Uid */
+$handler->display->display_options['fields']['uid']['id'] = 'uid';
+$handler->display->display_options['fields']['uid']['table'] = 'users';
+$handler->display->display_options['fields']['uid']['field'] = 'uid';
+$handler->display->display_options['fields']['uid']['exclude'] = TRUE;
+/* Sort criterion: User: Created date */
+$handler->display->display_options['sorts']['created']['id'] = 'created';
+$handler->display->display_options['sorts']['created']['table'] = 'users';
+$handler->display->display_options['sorts']['created']['field'] = 'created';
+/* Filter criterion: User: Active */
+$handler->display->display_options['filters']['status']['id'] = 'status';
+$handler->display->display_options['filters']['status']['table'] = 'users';
+$handler->display->display_options['filters']['status']['field'] = 'status';
+$handler->display->display_options['filters']['status']['value'] = '1';
+$handler->display->display_options['filters']['status']['group'] = 1;
+$handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+/* Filter criterion: Profile: How much do you plan to donate? (field_do_you_plan_to_donate_a_ce) */
+$handler->display->display_options['filters']['field_do_you_plan_to_donate_a_ce_value']['id'] = 'field_do_you_plan_to_donate_a_ce_value';
+$handler->display->display_options['filters']['field_do_you_plan_to_donate_a_ce_value']['table'] = 'field_data_field_do_you_plan_to_donate_a_ce';
+$handler->display->display_options['filters']['field_do_you_plan_to_donate_a_ce_value']['field'] = 'field_do_you_plan_to_donate_a_ce_value';
+$handler->display->display_options['filters']['field_do_you_plan_to_donate_a_ce_value']['relationship'] = 'profile';
+$handler->display->display_options['filters']['field_do_you_plan_to_donate_a_ce_value']['operator'] = 'not empty';
+
+/* Display: Page */
+$handler = $view->new_display('page', 'Page', 'page');
+$handler->display->display_options['path'] = 'donations/plans/view';
+
