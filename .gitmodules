@@ -1,0 +1,6 @@
+[submodule "projects/map"]
+	path = projects/map
+	url = https://github.com/patbl/ea-map.git
+[submodule "projects/task-suggester"]
+	path = projects/task-suggester
+	url = https://github.com/jacobhilton/findmeatask.git
