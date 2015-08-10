@@ -1,0 +1,15 @@
+name = OAuth Login Provider
+description = Allows users to log in to other sites through your site using OAuth
+core = 7.x
+package = "OAuth"
+
+dependencies[] = services
+dependencies[] = services_oauth
+dependencies[] = rest_server
+
+; Information added by drupal.org packaging script on 2011-05-27
+version = "7.x-1.1"
+core = "7.x"
+project = "oauthloginprovider"
+datestamp = "1306530416"
+

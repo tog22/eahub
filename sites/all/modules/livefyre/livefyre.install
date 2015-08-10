@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Provides any required installation or upgrade path requirements.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function livefyre_uninstall() {
+  variable_del('livefyre_disabled');
+  variable_del('livefyre_acct_num');
+  variable_del('livefyre_supplied_js');
+  variable_del('livefyre_parent_div');
+  variable_del('livefyre_custom_instantiate_lf');
+  variable_del('livefyre_custom_script_snippet');
+  variable_del('livefyre_node_types');
+  variable_del('livefyre_location');
+  variable_del('livefyre_weight');
+}

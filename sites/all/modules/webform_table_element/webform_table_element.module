@@ -1,0 +1,837 @@
+<?php
+
+/**
+ * @file
+ * Table element for webform
+ */
+
+/**
+ * Implements hook_webform_component_info().
+ */
+function webform_table_element_webform_component_info() {
+  $components = array();
+  $components['table_element'] = array(
+    'label' => t('Table element'),
+    'description' => t('Table element for webform'),
+    'features' => array(
+      'csv' => TRUE,
+      'required' => FALSE,
+      'conditional' => FALSE,
+      'group' => TRUE,
+    ),
+  );
+
+  return $components;
+}
+
+/**
+ * Implementation of _webform_defaults_component().
+ */
+function _webform_defaults_table_element() {
+  return array(
+    'name' => '',
+    'form_key' => NULL,
+    'pid' => 0,
+    'weight' => 0,
+    'extra' => array(
+      'title_display' => 0,
+      'description' => '',
+      'rows' => '',
+      'private' => 0,
+      'custom_row_keys' => 0,
+      'switch_layout' => 0,
+    ),
+  );
+}
+
+/**
+ * Implementation of _webform_render_component().
+ */
+function _webform_render_table_element($component, $value = NULL, $filter = TRUE) {
+  webform_component_include('select');
+  $class = 'webform-component-table-element';
+  $element = array(
+    '#type' => 'table_element',
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#weight' => $component['weight'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#attributes' => array('class' => array($class)),
+    '#webform_component' => $component,
+    '#theme_wrappers' => array('webform_element'),
+    '#table_element_rows' => _webform_select_options_from_text($component['extra']['rows'], TRUE),
+    '#switch_layout' => $component['extra']['switch_layout'],
+    '#process' => array('_table_element_expand'),
+    '#children_values' => is_array($value) ? $value['rows'] : NULL,
+    '#theme' => array('table_element'),
+  );
+  if ($component['extra']['title_display'] == 'none') {
+    unset($element['#title']);
+  }
+
+  $element['#element_validate'][] = '_table_element_validate';
+
+  return $element;
+}
+
+function _table_element_expand($element) {
+
+  $children = element_children($element);
+  if (!$element['#switch_layout']) {
+    _table_element_expand_rows($element, $children);
+  }
+  else {
+    _table_element_expand_columns($element, $children);
+  }
+
+  foreach ($children as $child) {
+    unset($element[$child]);
+  }
+  return $element;
+}
+
+function _table_element_expand_rows(&$element, $children) {
+  $rows = $element['#table_element_rows'];
+  $elkey = $element['#webform_component']['form_key'];
+  foreach ($rows as $rowkey => $val) {
+    //empty(0) returns TRUE...
+    if (!empty($rowkey) || $rowkey === 0) {
+      foreach ($children as $child) {
+        $i = 0;
+        //form_builder renders elements without cids, so give a temp cid...
+        if (!isset($element[$child]['#webform_component']['cid'])) {
+          $cid = $i++ . 'a';
+        }
+        else {
+          $cid = $element[$child]['#webform_component']['cid'];
+        }
+        if (!is_null($element['#children_values'])) {
+          if ($element[$child]['#type'] == 'date') {
+            $element['#children_values'][$rowkey][$child] = webform_date_array($element['#children_values'][$rowkey][$child]);
+            $element[$child]['#value'] = $element['#children_values'][$rowkey][$child];
+            $element[$child]['#default_value'] = $element['#children_values'][$rowkey][$child];
+            $element[$child] = webform_expand_date($element[$child]);
+          }
+          $element[$child]['#value'] = isset($element['#children_values'][$rowkey][$child]) ? $element['#children_values'][$rowkey][$child] : '';
+          $element[$child]['#default_value'] = isset($element['#children_values'][$rowkey][$child]) ? $element['#children_values'][$rowkey][$child] : '';
+        }
+        $element["row__{$elkey}__{$rowkey}"]["row__{$elkey}__{$rowkey}__{$cid}"] = $element[$child];
+        $element["row__{$elkey}__{$rowkey}"]["row__{$elkey}__{$rowkey}__{$cid}"]['#title'] = "";
+        $element["row__{$elkey}__{$rowkey}"]["row__{$elkey}__{$rowkey}__{$cid}"]['#error_title'] = $element[$child]['#title'];
+        $element["row__{$elkey}__{$rowkey}"]["row__{$elkey}__{$rowkey}__{$cid}"]['#name'] = "row__{$elkey}__{$rowkey}__{$cid}";
+        if (isset($_POST["row__{$elkey}__{$rowkey}__{$cid}"])) {
+          if (is_array($_POST["row__{$elkey}__{$rowkey}__{$cid}"])) {
+            // needed for checkboxes
+            $val = key($_POST["row__{$elkey}__{$rowkey}__{$cid}"]);
+          }
+          else {
+            $val = $_POST["row__{$elkey}__{$rowkey}__{$cid}"];
+          }
+          $element["row__{$elkey}__{$rowkey}"]["row__{$elkey}__{$rowkey}__{$cid}"]['#value'] = check_plain($val);
+        }
+        $element['#row_titles']["row__{$elkey}__{$rowkey}__{$cid}"] = $element[$child]['#title'];
+        $element['#column_titles']["row__{$elkey}__{$rowkey}__{$cid}"] = 'row-title ' . drupal_html_class($child);
+      }
+      $element["row__{$elkey}__{$rowkey}"]['#type'] = 'table_element_row';
+      $element["row__{$elkey}__{$rowkey}"]['#row_title'] = $val;
+      $element['#name'] = "row__{$elkey}__{$rowkey}";
+    }
+  }
+}
+
+function _table_element_expand_columns(&$element, $children) {
+  $rows = $element['#table_element_rows'];
+  $elkey = $element['#webform_component']['form_key'];
+  foreach ($children as $child) {
+    //empty(0) returns TRUE...
+    foreach ($rows as $rowkey => $val) {
+      if (!empty($rowkey) || $rowkey === 0) {
+        $i = 0;
+        //form_builder renders elements without cids, so give a temp cid...
+        if (!isset($element[$child]['#webform_component']['cid'])) {
+          $cid = $i++ . 'a';
+        }
+        else {
+          $cid = $element[$child]['#webform_component']['cid'];
+        }
+        if (!is_null($element['#children_values'])) {
+          if ($element[$child]['#type'] == 'date') {
+            $element['#children_values'][$child][$rowkey] = webform_date_array($element['#children_values'][$child][$rowkey]);
+            $element[$child]['#value'] = $element['#children_values'][$child][$rowkey];
+            $element[$child]['#default_value'] = $element['#children_values'][$child][$rowkey];
+            $element[$child] = webform_expand_date($element[$child]);
+          }
+          $element[$child]['#value'] = isset($element['#children_values'][$child][$rowkey]) ? $element['#children_values'][$child][$rowkey] : '';
+          $element[$child]['#default_value'] = isset($element['#children_values'][$child][$rowkey]) ? $element['#children_values'][$child][$rowkey] : '';
+        }
+        $element["row__{$elkey}__{$cid}"]["row__{$elkey}__{$rowkey}__{$cid}"] = $element[$child];
+        $element["row__{$elkey}__{$cid}"]["row__{$elkey}__{$rowkey}__{$cid}"]['#title'] = "";
+        $element["row__{$elkey}__{$cid}"]["row__{$elkey}__{$rowkey}__{$cid}"]['#error_title'] = $element[$child]['#title'];
+        $element["row__{$elkey}__{$cid}"]["row__{$elkey}__{$rowkey}__{$cid}"]['#name'] = "row__{$elkey}__{$rowkey}__{$cid}";
+        if (isset($_POST["row__{$elkey}__{$rowkey}__{$cid}"])) {
+          $element["row__{$elkey}__{$cid}"]["row__{$elkey}__{$rowkey}__{$cid}"]['#value'] = check_plain(_webform_table_element_checkboxes_to_string($_POST["row__{$elkey}__{$rowkey}__{$cid}"], array()));
+        }
+        $element['#row_titles']["row__{$elkey}__{$rowkey}__{$cid}"] = $val;
+        $element['#column_titles']["row__{$elkey}__{$rowkey}__{$cid}"] = 'row-title ' . drupal_html_class($val);
+        $element["row__{$elkey}__{$cid}"]['#type'] = 'table_element_row';
+        $element["row__{$elkey}__{$cid}"]['#row_title'] = $element[$child]['#title'];;
+        $element['#name'] = "row__{$elkey}__{$cid}";
+      }
+    }
+  }
+}
+
+function _table_element_validate($form_element, &$form_state) {
+  unset($form_state['values']['submitted'][$form_element['#webform_component']['form_key']]);
+  $table_element_cids = array($form_element['#webform_component']['cid'] => $form_element['#webform_component']['form_key']);
+  _webform_table_element_restructure_post($_POST, $table_element_cids);
+  foreach (element_children($form_element) as $child) {
+    if (isset($form_element[$child]['#required_children']) && !empty($form_element[$child]['#required_children'])) {
+      foreach ($form_element[$child]['#required_children'] as $required_child) {
+        $empty = FALSE;
+        if (!isset($_POST[$required_child]) || empty($_POST[$required_child])) {
+          $empty = TRUE;
+        }
+        else if (is_array($_POST[$required_child])) {
+          foreach ($_POST[$required_child] as $part) {
+            if (empty($part)) {
+              $empty = TRUE;
+            }
+          }
+        }
+        if ($empty) {
+          if (!$form_element['#switch_layout']) {
+            form_error($form_element[$child][$required_child], t('!name field is required in row !rowname.',
+              array(
+                '!name' => $form_element[$child][$required_child]['#error_title'],
+                '!rowname' => $form_element[$child]['#row_title'],
+              ))
+            );
+          }
+          else {
+            form_error($form_element[$child][$required_child], t('!name field is required in column !rowname.',
+              array(
+                '!name' => $form_element[$child][$required_child]['#error_title'],
+                '!rowname' => $form_element['#row_titles'][$required_child],
+              ))
+            );
+          }
+        }
+      }
+    }
+    foreach ($form_element[$child]['#all_children'] as $child) {
+      if (!isset($_POST[$child]) || empty($_POST[$child])) {
+        $_POST[$child] = NULL;
+      }
+    }
+  }
+}
+
+/**
+ * Implements _webform_theme_component
+ */
+function _webform_theme_table_element() {
+  return array(
+    'table_element' => array(
+      'render element' => 'element',
+    ),
+    'table_element_row' => array(
+      'render element' => 'element',
+    ),
+  );
+}
+
+/**
+ * Theme callback
+ */
+function theme_table_element($variables) {
+  $element = $variables['element'];
+  $header = array();
+  $header_complete = FALSE;
+  $rows = array();
+  foreach (element_children($element) as $child) {
+    $child_element = $element[$child];
+    $row = array($child_element['#row_title']);
+    foreach (element_children($child_element) as $grandchild) {
+      if (!$header_complete && isset($element['#row_titles'])) {
+        $header[]  = array('data' => $element['#row_titles'][$grandchild], 'class' => $element['#column_titles'][$grandchild]);
+      }
+
+      $row[] = array('data' => drupal_render($child_element[$grandchild]));
+    }
+    $header_complete = TRUE;
+    $rows[] = $row;
+  }
+
+  array_unshift($header, array('class' => 'row-title', 'data' => '&nbsp;'));
+  $element['#attributes']['id'] = $element['#id'];
+  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => $element['#attributes']));
+}
+
+/**
+ * Theme callback
+ */
+function theme_table_element_row($variables) {
+  $element = $variables['element'];
+  $output = '<tr><td>' . $element["#row_title"] . '</td>';
+  $element['#children'] = drupal_render_children($element);
+  $output .= $element['#children'];
+  $output .= '</tr>';
+  return $output;
+}
+
+/**
+ * Implementation of _webform_display_component().
+ */
+function _webform_display_table_element($component, $value, $format = 'html') {
+  webform_component_include('select');
+  if (isset($component['children'])) {
+    if ($component['extra']['switch_layout']) {
+      $wtl_rows = _webform_select_options_from_text($component['extra']['rows']);
+      foreach ($component['children'] as $child) {
+        if ($child['type'] == 'date' || $child['type'] == 'time' || $child['type'] == 'select') {
+          foreach ($wtl_rows as $key => $val) {
+            if (empty($value['rows'][$child['form_key']][$key])) {
+              $value['rows'][$child['form_key']][$key] = '';
+            }
+            elseif ($child['type'] == 'date') {
+              $date_arr = webform_date_array($value['rows'][$child['form_key']][$key]);
+              $timestamp = webform_strtotime($date_arr['month'] . '/' . $date_arr['day'] . '/' . $date_arr['year']);
+              $date_format = webform_date_format('medium');
+              $value['rows'][$child['form_key']][$key] = format_date($timestamp, 'custom', $date_format);
+            }
+            elseif ($child['type'] == 'time') {
+              if (!empty($value['rows'][$child['form_key']][$key]['hour'])) {
+                $timestamp = $value['rows'][$child['form_key']][$key]['hour'] . ':' . $value['rows'][$child['form_key']][$key]['minute'] . (isset($value['rows'][$child['form_key']][$key]['ampm']) ? ' ' . $value['rows'][$child['form_key']][$key]['ampm'] : '');
+              }
+              else {
+                $timestamp = '';
+              }
+              $value['rows'][$child['form_key']][$key] = $timestamp;
+            }
+            elseif ($child['type'] == 'select') {
+              $items = _webform_select_options_from_text($child['extra']['items']);
+              if (is_array($value['rows'][$child['form_key']][$key])) {
+                $value['rows'][$child['form_key']][$key] = _webform_table_element_checkboxes_to_string($value['rows'][$child['form_key']][$key], $items);
+              }
+              else {
+                $value['rows'][$child['form_key']][$key] = $items[$value['rows'][$child['form_key']][$key]];
+              }
+            }
+          }
+        }
+      }
+    }
+    else {
+      foreach ($component['children'] as $child) {
+        if ($child['type'] == 'date' || $child['type'] == 'time' || $child['type'] == 'select') {
+          foreach ($value['rows'] as $key => $val) {
+            if (empty($val[$child['form_key']])) {
+              $value['rows'][$key][$child['form_key']] = '';
+            }
+            elseif ($child['type'] == 'date') {
+              $date_arr = webform_date_array($val[$child['form_key']]);
+              $timestamp = webform_strtotime($date_arr['month'] . '/' . $date_arr['day'] . '/' . $date_arr['year']);
+              $date_format = webform_date_format('medium');
+              $value['rows'][$key][$child['form_key']] = format_date($timestamp, 'custom', $date_format);
+            }
+            elseif ($child['type'] == 'time') {
+              if (!empty($value['rows'][$key][$child['form_key']]['hour'])) {
+                $timestamp = $value['rows'][$key][$child['form_key']]['hour'] . ':' . $value['rows'][$key][$child['form_key']]['minute'] . (isset($value['rows'][$key][$child['form_key']]['ampm']) ? ' ' . $value['rows'][$key][$child['form_key']]['ampm'] : '');
+              }
+              else {
+                $timestamp = '';
+              }
+              $value['rows'][$key][$child['form_key']] = $timestamp;
+            }
+            elseif ($child['type'] == 'select') {
+              $items = _webform_select_options_from_text($child['extra']['items']);
+              if (is_array($val[$child['form_key']])) {
+                $data = array();
+                foreach ($val[$child['form_key']] as $k) {
+                  $data[] = $items[$k];
+                }
+                $value['rows'][$key][$child['form_key']] = implode(', ', $data);
+              }
+              else {
+                $value['rows'][$key][$child['form_key']] = $items[$val[$child['form_key']]];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (empty($value['rows'])) {
+    $value['header'] = array();
+  }
+
+  if ($format == 'html') {
+    $element = array(
+      '#title' => $component['name'],
+      '#weight' => $component['weight'],
+      '#format' => $format,
+      '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+      '#markup' => theme('table', $value),
+      '#webform_component' => $component,
+    );
+  }
+  else {
+    if (empty($value['header'])) {
+      $length = 0;
+    }
+    else {
+      $length = max(array_map('strlen', $value['header']));
+    }
+    foreach ($value['rows'] as $row) {
+      $length = max($length, max(array_map('_webform_table_element_strlen_array', $row)));
+    }
+    $length += 3;
+    $output = "";
+    if ($component['extra']['title_display'] == 'before') {
+      $output .= $component['name'] . ":\n";
+    }
+    if ($component['extra']['title_display'] == 'inline') {
+      $output .= $component['name'] . ':   ';
+      $namelength = drupal_strlen($component['name']) + 4;
+    }
+    foreach ($value['header'] as $header) {
+      $output .= sprintf("%-{$length}s", strip_tags($header));
+    }
+    $output .= "\n";
+    foreach ($value['rows'] as $row) {
+      if ($component['extra']['title_display'] == 'inline') {
+        $output .= sprintf("%-{$namelength}s", '');
+      }
+      foreach ($row as $cell) {
+        if (is_array($cell)) {
+          $cell = _webform_table_element_checkboxes_to_string($cell, array());
+        }
+        $output .= sprintf("%-{$length}s", strip_tags($cell));
+      }
+      $output .= "\n";
+    }
+    $element = array(
+      '#type' => 'markup',
+      '#markup' => $output,
+      '#weight' => $component['weight'],
+    );
+
+  }
+
+  return $element;
+}
+
+/**
+ * Custom strlen implementation to handle checkboxes.
+ * Checkboxes are stored as an array, not as a string.
+ */
+function _webform_table_element_strlen_array($data) {
+  if (is_array($data)) {
+    $data = key($data);
+  }
+  return strlen($data);
+}
+
+/**
+ * Implementation of _webform_edit_component().
+ */
+function _webform_edit_table_element($component) {
+  webform_component_include('select');
+  if (module_exists('options_element')) {
+    $form['rows'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Rows'),
+      '#collapsible' => TRUE,
+      '#description' => t('Values of the list item. One value per line.'),
+      '#attributes' => array('class' => array('webform-options-element')),
+      '#element_validate' => array('_webform_edit_validate_options'),
+    );
+    $form['rows']['options'] = array(
+      '#type' => 'options',
+      '#options' => _webform_select_options_from_text($component['extra']['rows'], TRUE),
+      '#optgroups' => FALSE,
+      '#default_value' => FALSE,
+      '#key_type' => 'mixed',
+      '#key_type_toggle' => t('Customize keys (Advanced)'),
+      '#key_type_toggled' => $component['extra']['custom_row_keys'],
+    );
+  }
+  else {
+    $form['extra']['rows'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Rows'),
+      '#default_value' => $component['extra']['rows'],
+      '#description' => t('One row or column per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>') . theme('webform_token_help'),
+      '#cols' => 60,
+      '#rows' => 5,
+      '#weight' => -2,
+      '#required' => TRUE,
+      '#wysiwyg' => FALSE,
+    );
+  }
+  $form['extra']['switch_layout'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Switch Rows & Columns'),
+    '#description' => t('If checked, rows and columns will be switched.'),
+    '#default_value' => $component['extra']['switch_layout'],
+    '#weight' => -3,
+  );
+  drupal_add_js(drupal_get_path('module', 'webform_table_element') . '/webform_table_element.js', array('type' => 'file', 'scope' => 'footer'));
+  return $form;
+}
+
+function webform_table_element_webform_submission_presave($node, &$submission) {
+  webform_component_include('select');
+  $values = array();
+  $comp_array = array();
+
+  // remove invalid data
+  foreach ($submission->data as $key => $data) {
+    if ($key == '') {
+      unset($submission->data[$key]);
+    }
+  }
+
+  // grab all table_elements
+  $table_element_cids = array();
+  $table_element_children_parent = array();
+  foreach ($node->webform['components'] as $component) {
+    if ($component['type'] == 'table_element') {
+      $rows = _webform_select_options_from_text($component['extra']['rows']);
+      $comp_array[$component['form_key']]['rows'] = $rows;
+      $comp_array[$component['form_key']]['cid'] = $component['cid'];
+      $table_element_cids[$component['cid']] = $component['form_key'];
+      // clear submitted data
+      unset($submission->data[$component['cid']]);
+    }
+    else {
+      if (isset($node->webform['components'][$component['pid']]) && $node->webform['components'][$component['pid']]['type'] == 'table_element') {
+        $table_element_children_parent[$component['cid']] = $component['pid'];
+      }
+    }
+  }
+
+  //restructure $_POST array to support date fields
+  if (isset($_POST['submitted'])) {
+    _webform_table_element_restructure_post($_POST, $table_element_cids);
+    foreach ($table_element_cids as $tcid => $form_key) {
+      if (isset($_POST['submitted'][$form_key])) {
+        foreach ($_POST['submitted'][$form_key] as $row) {
+          $_POST += $row;
+        }
+      }
+    }
+  }
+
+  // loop through posted values
+  $values += _webform_table_element_get_post_values($_POST, $comp_array);
+
+  // re-order the received data
+  foreach ($values as $cid => &$val) {
+    $parent = $table_element_children_parent[$cid];
+    if ($parent) {
+      $rows = _webform_select_options_from_text($node->webform['components'][$parent]['extra']['rows']);
+      $data = array();
+      foreach ($rows as $key => $row) {
+        $data[$key] = $val['value'][0][$key];
+      }
+      $val['value'][0] = $data;
+    }
+  }
+  foreach ($comp_array as $cid => $comp) {
+    foreach ($comp['rows'] as $key => $row) {
+      // check if this value belong to this webform table element
+      //if (array_key_exists($key)
+    }
+  }
+
+  // serialize data
+  foreach ($values as $cid => &$val) {
+    if ($node->webform['components'][$cid]['type'] == 'date') {
+      foreach ($val['value'][0] as $rowid => $datefield) {
+        $dateval = "";
+        if (!empty($datefield['month']) && !empty($datefield['day']) && !empty($datefield['year'])) {
+          $dateval = mktime(0, 0, 0, $datefield['month'], $datefield['day'], $datefield['year']);
+          $dateval = date('Y-m-d', $dateval);
+        }
+        $val['value'][0][$rowid] = $dateval;
+      }
+    }
+    $val['value'][0] = serialize($val['value'][0]);
+  }
+
+  // merge
+  $submission->data = $submission->data + $values;
+}
+
+function _webform_table_element_restructure_post(&$post_array, $table_element_cids) {
+  if (isset($post_array['submitted'])) {
+    foreach ($table_element_cids as $tcid => $form_key) {
+      _webform_table_element_restructure_post_recursive($post_array['submitted'], $form_key);
+    }
+  }
+}
+
+function _webform_table_element_restructure_post_recursive(&$post_array, $form_key) {
+  if (isset($post_array[$form_key]) && is_array($post_array[$form_key])) {
+    foreach ($post_array[$form_key] as $row) {
+      $_POST += $row;
+    }
+  }
+  else {
+    foreach (element_children($post_array) as $child) {
+      if (is_array($post_array[$child])) {
+        _webform_table_element_restructure_post_recursive($post_array[$child], $form_key);
+      }
+    }
+  }
+}
+
+function _webform_table_element_get_post_values($post_array, $comp_array) {
+  $values = array();
+  foreach ($post_array as $name => $val) {
+    $name_array = explode('__', $name);
+    if (is_array($name_array)) {
+      if ($name_array[0] == 'row' && array_key_exists($name_array[1], $comp_array)) {
+        // check if value exists
+        if (array_key_exists($name_array[2], $comp_array[$name_array[1]]['rows'])) {
+          $values[$name_array[3]]['value'][0][$name_array[2]] = $val;
+        }
+      }
+    }
+  }
+  return $values;
+}
+
+function webform_table_element_webform_submission_load(&$submissions) {
+  foreach ($submissions as &$submission) {
+    $node = node_load($submission->nid);
+    foreach ($node->webform['components'] as $component) {
+      if ($component['type'] == 'table_element') {
+        $table_children = array();
+        foreach ($node->webform['components'] as $comp) {
+          if ($comp['pid'] == $component['cid']) {
+            $table_children[] = $comp;
+          }
+        }
+        _webform_table_element_alter_submission($submission, $table_children, $component);
+      }
+    }
+  }
+}
+
+function _webform_table_element_alter_submission(&$submission, $table_children, $parent) {
+  webform_component_include('select');
+  if (!$parent['extra']['switch_layout']) {
+    $row_names = _webform_select_options_from_text($parent['extra']['rows'], TRUE);
+    $headers = array("");
+    $rows = array();
+    foreach ($table_children as $child) {
+      if (isset($submission->data[$child['cid']]) && is_array($submission->data[$child['cid']]['value'])) {
+        foreach ($submission->data[$child['cid']]['value'] as $val) {
+          $val = unserialize($val);
+          $headers[] = $child['name'];
+          foreach ($val as $rowkey => $rowval) {
+            $rows[$rowkey][$child['form_key']] = $rowval;
+          }
+          unset($submission->data[$child['cid']]);
+        }
+      }
+    }
+
+    foreach ($rows as $key => $row) {
+      array_unshift($rows[$key], "<strong>" . $row_names[$key] . "</strong>");
+    }
+  }
+  else {
+    $col_names = _webform_select_options_from_text($parent['extra']['rows'], TRUE);
+    $headers = array("");
+    $rows = array();
+    foreach ($table_children as $child) {
+      if (isset($submission->data[$child['cid']]) && is_array($submission->data[$child['cid']]['value'])) {
+        $rows[$child['form_key']] = array("<strong>" . $child['name'] . "</strong>");
+        foreach ($submission->data[$child['cid']]['value'] as $val) {
+          $val = unserialize($val);
+          foreach ($val as $rowkey => $rowval) {
+            $headers[$rowkey] = $col_names[$rowkey];
+            $rows[$child['form_key']][$rowkey] = $rowval;
+          }
+          unset($submission->data[$child['cid']]);
+        }
+      }
+    }
+  }
+
+  $submission->data[$parent['cid']]['value'] = array('header' => $headers, 'rows' => $rows);
+}
+
+function webform_table_element_webform_submission_render_alter(&$renderable) {
+  //this is necessary, otherwise there will be labels of other elements below the table element
+  _webform_table_element_render_alter_recurse($renderable);
+}
+
+function _webform_table_element_render_alter_recurse(&$renderable) {
+  foreach (element_children($renderable) as $child) {
+    if ($renderable[$child]['#webform_component']['type'] == 'table_element') {
+      foreach (element_children($renderable[$child]) as $table_child) {
+        unset($renderable[$child][$table_child]['#theme_wrappers']);
+      }
+    }
+    else {
+      _webform_table_element_render_alter_recurse($renderable[$child]);
+    }
+
+  }
+}
+
+function webform_table_element_form_alter(&$form, &$form_state, $form_id) {
+  if (strpos($form_id, 'webform_client_form') !== FALSE) {
+    foreach ($form['#node']->webform['components'] as $component) {
+      if ($component['type'] == 'table_element') {
+        $form['#after_build'][] = '_webform_table_element_form_after_build';
+        array_unshift($form['#submit'], '_webform_table_element_form_submit');
+        $form['#submit'][] = '_webform_table_element_form_submit_after';
+        break;
+      }
+    }
+  }
+}
+
+function _webform_table_element_form_submit($form, &$form_state) {
+  $node = $form['#node'];
+  foreach ($node->webform['components'] as $component) {
+    if ($component['type'] == 'table_element') {
+      _array_key_delete_recursive($form_state['values']['submitted'], $component['form_key']);
+    }
+  }
+}
+
+function _array_key_delete_recursive(&$array, $key) {
+  if (!array_key_exists($key, $array)) {
+    foreach ($array as $arraykey => $value) {
+      if (is_array($value)) {
+        _array_key_delete_recursive($array[$arraykey], $key);
+      }
+    }
+  }
+  else {
+    unset($array[$key]);
+  }
+}
+
+function _webform_table_element_form_submit_after($form, &$form_state) {
+  if ((!isset($form_state['redirect']) || empty($form_state['redirect'])) && $form_state['webform_completed'])  {
+    drupal_goto($_GET['q']);
+  }
+}
+
+
+function _webform_table_element_form_after_build(&$form, &$form_state) {
+  _webform_table_element_after_build_recurse($form, $form_state);
+  return $form;
+}
+
+function _webform_table_element_after_build_recurse(&$element, &$form_state) {
+  foreach (element_children($element) as $child) {
+    if (isset($element[$child]['#type']) && $element[$child]['#type'] == 'table_element_row') {
+      foreach (element_children($element[$child]) as $rowchild) {
+        $element[$child]['#all_children'][] = $rowchild;
+        if ($element[$child][$rowchild]['#required']) {
+          $element[$child]['#required_children'][] = $rowchild;
+          $element[$child][$rowchild]['#required'] = FALSE;
+        }
+      }
+    }
+    _webform_table_element_after_build_recurse($element[$child], $form_state);
+  }
+}
+
+/**
+ * Implements _webform_table_component().
+ */
+function _webform_table_table_element($component, $value) {
+  // Loop all values, convert array to strings, needed for checkboxes
+  foreach ($value['rows'] as $key => $row) {
+    foreach ($row as $k => $data) {
+      if ($component['extra']['switch_layout']) {
+        if (is_array($data)) {
+          $value['rows'][$key][$k] = _webform_table_element_checkboxes_to_string($data, array());
+        }
+      }
+      else {
+        if (is_array($data)) {
+          $value['rows'][$key][$k] = _webform_table_element_checkboxes_to_string($data, array());
+        }
+      }
+    }
+  }
+  return theme('table', $value);
+}
+
+/**
+ * Implements _webform_csv_headers_component().
+ */
+function _webform_csv_headers_table_element($component, $export_options) {
+  $header = array();
+  $header[0] = array('');
+  $header[1] = array($component['name']);
+  $header[2] = array(t('Row name'));
+  if (!$component['extra']['switch_layout']) {
+    $query = db_select('webform_component', 'wc')
+      ->fields('wc', array('cid', 'name', 'weight'))
+      ->condition('pid', $component['cid'])
+      ->condition('nid', $component['nid'])
+      ->orderBy('weight')
+      ->execute();
+    $result = array();
+    while ($res = $query->fetchAssoc()) {
+      $header[2][] = $res['name'];
+    }
+  }
+  else {
+    webform_component_include('select');
+    $header[2] += _webform_select_options_from_text($component['extra']['rows'], TRUE);
+
+  }
+  return $header;
+}
+
+/**
+ * Implements _webform_csv_data_component().
+ */
+function _webform_csv_data_table_element($component, $export_options, $value) {
+  $table = array();
+  foreach ($value['rows'] as $val) {
+    $all_data = array_values($val);
+    foreach ($all_data as $key => $data) {
+      $table[$key][] = strip_tags($data) . "\n";
+    }
+  }
+
+  foreach ($table as $key => $row) {
+    $table[$key] = implode("\n", $row);
+  }
+  return $table;
+}
+
+/**
+ * Checkbox to string
+ */
+function _webform_table_element_checkboxes_to_string($checkboxes, $items) {
+  $data = array();
+  if (is_array($checkboxes)) {
+    if (empty($items)) {
+      $data = array_keys($checkboxes);
+    }
+    else {
+      foreach ($checkboxes as $k) {
+        $data[] = $items[$k];
+      }
+    }
+  }
+  else {
+    $data[] = $checkboxes;
+  }
+  return implode(', ', $data);
+}
