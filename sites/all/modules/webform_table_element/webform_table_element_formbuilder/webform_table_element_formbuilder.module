@@ -1,0 +1,84 @@
+<?php
+/**
+ * @file
+ *
+ */
+
+function webform_table_element_formbuilder_form_builder_types() {
+  $fields = array();
+
+  // The #type property of the field is used as the key.
+  $fields['table_element'] = array(
+    'title' => t('Table element'),
+    // Properties that may be edited on this field type.
+    'properties' => array(
+      'title',
+      'description',
+      'key',
+      'title_display',
+      'private',
+      //Draggable list specific options
+      'table_element_rows',
+    ),
+    // A complete default form element used when a new field of this type
+    // is added to a form.
+    'default' => _form_builder_webform_default('table_element'),
+  );
+  $fields['table_element']['default']['#table_element_rows'] = array(t('Row 1'), t('Row 2'), t('Row 3'));
+  $fields['table_element']['default']['#title'] = t('New Table element');
+
+  // Return the array of supported fields, with a key for the form type that
+  // these fields apply to.
+  return array(
+    'webform' => $fields,
+  );
+}
+
+function webform_table_element_formbuilder_form_builder_properties($form_type) {
+  return array(
+    'table_element_rows' => array(
+      'form' => 'webform_table_element_formbuilder_property_table_element_rows_form',
+      'submit' => array('webform_table_element_formbuilder_property_table_element_rows_submit')
+    ),
+  );
+}
+
+function webform_table_element_formbuilder_property_table_element_rows_form(&$form_state, $form_type, $element) {
+  $element['#table_element_rows'] = _webform_select_options_to_text($element['#table_element_rows']);
+  $form = _form_builder_webform_build_edit_form('table_element', $element, 'table_element_rows', 'rows', array('rows'), array('extra', 'rows'));
+  $form['table_element_rows']['options']['#key_type_toggled'] = !empty($element['#custom_row_keys']);
+  return $form;
+}
+
+function webform_table_element_formbuilder_property_table_element_rows_submit(&$form, &$form_state) {
+  if (empty($form_state['values']['table_element_rows'])) {
+    $form_state['values']['table_element_rows'] = _webform_select_options_from_text($form_state['values']['extra']['table_element_rows']);
+    $form_state['values']['custom_table_element_row_keys'] = $form_state['values']['extra']['custom_table_element_row_keys'];
+  }
+}
+
+function _webform_form_builder_save_table_element($component, $form_element) {
+  $rows = '';
+  foreach ($form_element['#table_element_rows'] as $key => $row_value) {
+    $rows .= $key . '|' . $row_value . "\n";
+  }
+
+  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : NULL;
+  $component['extra']['title_display'] = isset($form_element['#title_display']) ? $form_element['#title_display'] : 'before';
+  $component['extra']['rows'] = $rows;
+  $component['extra']['custom_row_keys'] = isset($form_element['#custom_row_keys']) ? $form_element['#custom_row_keys'] : FALSE;
+
+  return $component;
+}
+
+function webform_table_element_formbuilder_form_builder_preview_alter(&$element, $form_type, $form_id) {
+  if ($element['#type'] == 'table_element') {
+    drupal_add_js(drupal_get_path('module', 'webform_table_element_formbuilder') . '/webform_table_element_formbuilder.js', array('scope' => 'footer'));
+    foreach (element_children($element) as $row) {
+      if (count(element_children($element[$row])) == 0) {
+        //no rows added yet
+        $element['#theme'] = 'form_builder_empty_fieldset';
+      }
+    }
+  }
+}

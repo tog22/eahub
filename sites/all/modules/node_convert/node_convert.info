@@ -1,0 +1,19 @@
+; $Id: node_convert.info,v 1.2.2.1 2011/01/11 04:12:43 placinta Exp $
+name = Node Convert
+description = "Converts one or more nodes between different node types."
+core = 7.x
+files[] = node_convert.install
+files[] = node_convert.module
+files[] = node_convert.rules.inc
+files[] = node_convert.test
+files[] = includes/book.node_convert.inc
+files[] = includes/forum.node_convert.inc
+files[] = includes/panels_node.node_convert.inc
+files[] = includes/uc_product.node_convert.inc
+
+; Information added by drupal.org packaging script on 2011-01-11
+version = "7.x-1.0"
+core = "7.x"
+project = "node_convert"
+datestamp = "1294719667"
+

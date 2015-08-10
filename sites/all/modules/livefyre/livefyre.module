@@ -1,0 +1,199 @@
+<?php
+
+/**
+ * @file
+ * Display Livefyre comments.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function livefyre_menu() {
+  return array(
+    'admin/config/livefyre' => array(
+      'title' => 'Livefyre',
+      'description' => 'Configure livefyre comments',
+      'access arguments' => array('administer livefyre comments'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('livefyre_admin_settings_form'),
+      'file' => 'livefyre.admin.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function livefyre_node_view($node, $view_mode = 'full') {
+  $livefyre_node_types = variable_get('livefyre_node_types', array());
+  $livefyre_disabled = variable_get('livefyre_disabled', FALSE);
+  $livefyre_account_num = variable_get('livefyre_acct_num', '');
+  $livefyre_supplied_js = variable_get('livefyre_supplied_js', '');
+  $livefyre_custom_script_snippet = variable_get('livefyre_custom_script_snippet', '');
+  $livefyre_div = '<div id="livefyre"></div>';
+  $livefyre_custom_instantiate_lf = variable_get('livefyre_custom_instantiate_lf', FALSE);
+  $livefyre_parent_div = variable_get('livefyre_parent_div', '');
+  $livefyre_parent_div_html = '<div id="' . $livefyre_parent_div . '">';
+  if ($livefyre_disabled || empty($livefyre_account_num)) {
+    return;
+  }
+  if ($livefyre_supplied_js !== 'http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js'){
+    if (!empty($livefyre_node_types[$node->type])
+               && ($view_mode == 'full')
+               && (variable_get('livefyre_location', 'content_area') == 'content_area')) {
+      drupal_add_js($livefyre_supplied_js, array('type' => 'external', 'scope' => 'header'));
+      drupal_add_js(array('livefyre' => array('account_num' => $livefyre_account_num)), array('type' => 'setting', 'scope' => JS_DEFAULT));
+      if (!$livefyre_custom_instantiate_lf) {
+        drupal_add_js("var fyre = LF({
+          site_id: Drupal.settings.livefyre.account_num
+      })", array('type' => 'inline', 'scope' => 'footer'));
+      }
+      if (empty($livefyre_parent_div)) {
+        $node->content['livefyre'] = array(
+          '#markup' => $livefyre_div . $livefyre_custom_script_snippet,
+          '#weight' => variable_get('livefyre_weight', 50),
+        );
+      }
+      else {
+        $node->content['livefyre'] = array(
+          '#markup' => $livefyre_parent_div_html . $livefyre_div . '</div>' . $livefyre_custom_script_snippet,
+          '#weight' => variable_get('livefyre_weight', 50),
+        );
+      }
+    }
+    //version 3 stuff
+  } elseif ($livefyre_supplied_js == 'http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js') {
+     $livefyre_div = '<div id="livefyre-comments"></div>';
+     if (!empty($livefyre_node_types[$node->type])
+               && ($view_mode == 'full')
+               && (variable_get('livefyre_location', 'content_area') == 'content_area')) {
+      drupal_add_js($livefyre_supplied_js, array('type' => 'external', 'scope' => 'header'));
+      drupal_add_js(array('livefyre' => array('account_num' => $livefyre_account_num)), array('type' => 'setting', 'scope' => JS_DEFAULT));
+      if (!$livefyre_custom_instantiate_lf) {
+        drupal_add_js("(function () {
+    var articleId = fyre.conv.load.makeArticleId(null);
+    fyre.conv.load({}, [{
+        el: 'livefyre-comments',
+        network: 'livefyre.com',
+        siteId: Drupal.settings.livefyre.account_num,
+        articleId: articleId,
+        signed: false,
+        collectionMeta: {
+            articleId: articleId,
+            url: fyre.conv.load.makeCollectionUrl(),
+        }
+    }], function() {});
+}());", array('type' => 'inline', 'scope' => 'footer'));
+      }
+      if (empty($livefyre_parent_div)) {
+        $node->content['livefyre'] = array(
+          '#markup' => $livefyre_div . $livefyre_custom_script_snippet,
+          '#weight' => variable_get('livefyre_weight', 50),
+        );
+      }
+      else {
+        $node->content['livefyre'] = array(
+          '#markup' => $livefyre_parent_div_html . $livefyre_div . '</div>' . $livefyre_custom_script_snippet,
+          '#weight' => variable_get('livefyre_weight', 50),
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function livefyre_permission() {
+  return array(
+    'administer livefyre comments' => array(
+      'title' => t('Administer Livefyre Comments'),
+      'description' => t('Allow a user to administer Livefyre Comments.'),
+    ),
+    'add livefyre html' => array(
+      'title' => t('Add Livefyre HTML'),
+      'description' => t('Allow a user to add "extra" html, js and/or css which doesn\'t have to originate from Livefyre.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function livefyre_block_info() {
+  return array(
+    'livefyre_comments' => array(
+      'info' => t('Livefyre Comments'),
+      'cache' => DRUPAL_NO_CACHE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function livefyre_block_view($delta) {
+  switch ($delta) {
+    case 'livefyre_comments':
+      $livefyre_disabled = variable_get('livefyre_disabled', FALSE);
+      $livefyre_location = variable_get('livefyre_location', 'content_area');
+      if (!$livefyre_disabled && $livefyre_location == 'block') {
+        $livefyre_account_num = variable_get('livefyre_acct_num', '');
+        $livefyre_supplied_js = variable_get('livefyre_supplied_js', '');
+        $livefyre_custom_script_snippet = variable_get('livefyre_custom_script_snippet', '');
+        $livefyre_div = "<div id='livefyre'></div>";
+        $livefyre_custom_instantiate_lf = variable_get('livefyre_custom_instantiate_lf', FALSE);
+        $livefyre_parent_div = variable_get('livefyre_parent_div', '');
+        $livefyre_parent_div_html = '<div id="' . $livefyre_parent_div . '">';
+        drupal_add_js(array('livefyre' => array('account_num' => $livefyre_account_num)), array('type' => 'setting', 'scope' => JS_DEFAULT));
+        if ($livefyre_supplied_js !== 'http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js'){
+          if (!$livefyre_custom_instantiate_lf) {
+            drupal_add_js("var fyre = LF({
+          site_id: Drupal.settings.livefyre.account_num
+      })", array('type' => 'inline', 'scope' => 'footer'));
+          }
+          if (empty($livefyre_parent_div)) {
+                return array(
+                  'content' => $livefyre_div . '<script type="text/javascript" src="' . $livefyre_supplied_js . '">' . '</script>' .  $livefyre_custom_script_snippet,
+                );
+          }
+          else {
+                return array(
+                  'content' => $livefyre_parent_div_html . $livefyre_div . '</div>' . '<script type="text/javascript" src="' . $livefyre_supplied_js . '">' . '</script>' .  $livefyre_custom_script_snippet,
+                );
+          }
+        }
+        elseif ($livefyre_supplied_js == 'http://zor.livefyre.com/wjs/v3.0/javascripts/livefyre.js'){
+          $livefyre_div = '<div id="livefyre-comments"></div>';
+          if (!$livefyre_custom_instantiate_lf) {
+            drupal_add_js("(function () {
+              var articleId = fyre.conv.load.makeArticleId(null);
+              fyre.conv.load({}, [{
+              el: 'livefyre-comments',
+              network: 'livefyre.com',
+              siteId: Drupal.settings.livefyre.account_num,
+              articleId: articleId,
+              signed: false,
+              collectionMeta: {
+                  articleId: articleId,
+                  url: fyre.conv.load.makeCollectionUrl(),
+                }
+              }], function() {});
+            }());", array('type' => 'inline', 'scope' => 'footer'));
+          }
+          if (empty($livefyre_parent_div)) {
+                return array(
+                  'content' => $livefyre_div . '<script type="text/javascript" src="' . $livefyre_supplied_js . '">' . '</script>' .  $livefyre_custom_script_snippet,
+                );
+          }
+          else {
+                return array(
+                  'content' => $livefyre_parent_div_html . $livefyre_div . '</div>' . '<script type="text/javascript" src="' . $livefyre_supplied_js . '">' . '</script>' .  $livefyre_custom_script_snippet,
+                );
+          }
+        }
+      }
+      break;
+
+  }
+}

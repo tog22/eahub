@@ -1,0 +1,11 @@
+name = Form builder
+description = Form building framework.
+dependencies[] = options_element
+core = 7.x
+
+; Information added by Drupal.org packaging script on 2014-04-06
+version = "7.x-1.5"
+core = "7.x"
+project = "form_builder"
+datestamp = "1396776252"
+

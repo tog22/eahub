@@ -1,0 +1,13 @@
+name = Wordpress import
+description = "Import WXR files created by Wordpress blog tool."
+core=6.x
+package = "Importing"
+dependencies[] = ctools
+php = 5.0
+
+; Information added by drupal.org packaging script on 2010-11-12
+version = "7.x-2.x-dev"
+core = "7.x"
+project = "wordpress_import"
+datestamp = "1289565063"
+

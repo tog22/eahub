@@ -1,0 +1,158 @@
+<?php
+// $Id$
+
+/**
+ * Implements hook_form_alter_X().
+ *
+ * Add setting to webform fieldset components.
+ */
+function webform_addmore_form_webform_component_edit_form_alter(&$form, $form_state) {
+  if ($form['type']['#value'] != 'fieldset') {
+    return;
+  }
+  $settings = variable_get('webform_addmore_' . $form['nid']['#value'], array());
+
+  $form['display']['addmore'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Add More fieldset'),
+    '#description' => t('A single Add More fieldset will be displayed with an Add More button.'),
+    '#default_value' => isset($settings[$form['cid']['#value']]) ? $settings[$form['cid']['#value']] : 0,
+    '#weight' => 99,
+    '#parents' => array('extra', 'addmore')
+  );
+}
+
+/**
+ * Implements hook_node_load().
+ *
+ * Load addmore value for webform components on node load.
+ */
+function webform_addmore_node_load($nodes, $types) {
+  foreach($nodes as $node) {
+    if(in_array($node->type, webform_variable_get('webform_node_types'))) {
+      if($settings = variable_get('webform_addmore_' . $node->nid, array())) {
+        foreach($node->webform['components'] as $cid => &$component) {
+          if(isset($settings[$cid])) {
+            $component['extra']['addmore'] = $settings[$cid];
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Save webform fieldset setting.
+ *
+ * @param $component
+ *   The Webform component being saved.
+ */
+function webform_addmore_webform_component_presave(&$component) {
+  if ($component['type'] != 'fieldset') {
+    return;
+  }
+  if(isset($component['extra']['addmore'])){
+    $settings = variable_get('webform_addmore_' . $component['nid'], array());
+    $settings[$component['cid']] = isset($component['extra']['addmore']) ? $component['extra']['addmore'] : '';
+    variable_set('webform_addmore_' . $component['nid'], $settings);
+  }
+}
+
+ /**
+ * Delete webform component.
+ *
+ * @param $component
+ *   The Webform component being deleted.
+ */
+function webform_addmore_webform_component_delete($component) {
+  if ($component['type'] != 'fieldset') {
+    return;
+  }
+  $settings = variable_get('webform_addmore_' . $component['nid'], array());
+  unset($settings[$component['cid']]);
+  variable_set('webform_addmore_' . $component['nid'], $settings);
+}
+
+/**
+ * Implements hook_form_alter_X().
+ *
+ * Add setting to webform configure.
+ */
+function webform_addmore_form_webform_configure_form_alter(&$form, $form_state) {
+  $settings = variable_get('webform_addmore_' . $form['nid']['#value'], array());
+
+  $form['advanced']['addmore_add'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Add More button text'),
+    '#default_value' => isset($settings['addlabel']) ? $settings['addlabel'] : '',
+  );
+  $form['advanced']['addmore_del'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Delete button text'),
+    '#default_value' => isset($settings['dellabel']) ? $settings['dellabel'] : '',
+  );
+
+  $form['#submit'][] = 'webform_addmore_webform_configure_submit';
+}
+
+/**
+ * Save webform configure setting.
+ *
+ * @param $component
+ *   The Webform component being saved.
+ */
+function webform_addmore_webform_configure_submit($form, &$form_state) {
+  $settings = variable_get('webform_addmore_' . $form_state['values']['nid'], array());
+  $settings['addlabel'] = $form_state['values']['addmore_add'];
+  $settings['dellabel'] = $form_state['values']['addmore_del'];
+  variable_set('webform_addmore_' . $form_state['values']['nid'], $settings);
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Find form_key from cid and add JS.
+ */
+function webform_addmore_form_alter(&$form, &$form_state, $form_id) {
+  if (substr($form_id, 0, 19) != 'webform_client_form') {
+    return;
+  }
+
+  // Find form_key from cid.
+  $form_key = array();
+  $settings = variable_get('webform_addmore_' . $form['#node']->nid, array());
+  foreach ($settings as $cid => $enabled) {
+    if (is_int($cid) && $enabled) {
+      $parents = webform_component_parent_keys($form['#node'], $form['#node']->webform['components'][$cid]);
+      $component_id = str_replace('_', '-', array_pop($parents));
+      if (!empty($parents)) {
+        $form_key[] = 'webform-component-' . str_replace('_', '-', implode('--', $parents)) . '--' . $component_id;
+      }
+      else {
+        $form_key[] = 'webform-component-' . $component_id;
+      }
+    }
+  }
+
+  // Add JS.
+  if (count($form_key) > 1) {
+    $js_settings = array(
+      'fieldsets' => $form_key,
+      'addlabel' => isset($settings['addlabel']) ? t($settings['addlabel']) : t('Add more'),
+      'dellabel' => isset($settings['dellabel']) ? t($settings['dellabel']) : t('Remove last'),
+    );
+
+    $form['#attached']['js'][] = array(
+      'data' => array('webform_addmore' => $js_settings),
+      'type' => 'setting',
+    );
+    $form['#attached']['js'][] = array(
+      'data' => drupal_get_path('module', 'webform_addmore') . '/js/webform_addmore.js',
+      'type' => 'file'
+    );
+    $form['#attached']['js'][] = array(
+      'data' => drupal_get_path('module', 'webform_addmore') . '/js/jquery.livequery.js',
+      'type' => 'file'
+    );
+  }
+}

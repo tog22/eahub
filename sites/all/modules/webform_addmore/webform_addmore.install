@@ -1,0 +1,19 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Webform Add More installation routines
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function webform_addmore_uninstall() {
+  db_delete('variable')
+    ->condition('name', 'webform_addmore%', 'LIKE')
+    ->execute();
+  cache_clear_all('variables', 'cache');
+
+  drupal_set_message(t('Webform Add More variables removed.'));
+}
