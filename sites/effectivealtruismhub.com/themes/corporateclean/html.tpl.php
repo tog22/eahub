@@ -93,32 +93,34 @@
   	<?php print $styles; ?>
 
   
-  <?php if (theme_get_setting('responsive_respond','corporateclean')):
-  global $base_path; global $base_root; ?>
-  <!--[if lt IE 9]>
+  <?php if (theme_get_setting('responsive_respond','corporateclean')) {
+    global $base_path; 
+    global $base_root; 
+  ?>
+<!--[if lt IE 9]>
   <script src="<?php print $base_root . $base_path . path_to_theme() ?>/js/respond.min.js"></script>
   <![endif]-->
-  <?php endif; ?>
-	
-	<!-- JS -->
-	<?php print $scripts; ?>
-	<?php
-	if($is_node) {
-		// Donating (EA Action)
-		if ($node->nid == 37) { 
-			?>
-				  <!-- Add fancyBox -->
-				  <link rel="stylesheet" href="/sites/all/libraries/fancyapps-fancyBox-18d1712/source/jquery.fancybox.css?v=2.1.5" type="text/css" media="screen" />
-				  <script type="text/javascript" src="/sites/all/libraries/fancyapps-fancyBox-18d1712/source/jquery.fancybox.pack.js?v=2.1.5"></script>
-			<?
-		} 
-		/* yeilds errors, probably switch to arg() method including '&& arg(2) != 'edit':
-		else if ($node->nid == 2 || $node->nid == 13 || $node->nid == 23 || $node->nid == 91) {
-			?>
-			<link type="text/css" rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" media="all" />
+  <?php } ?>
+    
+    <!-- JS -->
+    <?php print $scripts; ?>
+    <?php
+    if($is_node) {
+        // Donating (EA Action)
+        if ($node->nid == 37) { 
+            ?>
+                  <!-- Add fancyBox -->
+                  <link rel="stylesheet" href="/sites/all/libraries/fancyapps-fancyBox-18d1712/source/jquery.fancybox.css?v=2.1.5" type="text/css" media="screen" />
+                  <script type="text/javascript" src="/sites/all/libraries/fancyapps-fancyBox-18d1712/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+            <?php
+        } 
+        /* yeilds errors, probably switch to arg() method including '&& arg(2) != 'edit':
+        else if ($node->nid == 2 || $node->nid == 13 || $node->nid == 23 || $node->nid == 91) {
+            ?>
+            <link type="text/css" rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" media="all" />
 <link type="text/css" rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/MarkerCluster.Default.css" media="all" />
 
-<!-- messes up:			
+<!-- messes up:         
     <link type="text/css" rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" media="all" />
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="http://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.0/leaflet.awesome-markers.css" rel="stylesheet">
@@ -126,9 +128,9 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/leaflet.markercluster.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.0/leaflet.awesome-markers.js"></script>
 -->
-			<?
-		}*/
-	}
+            <?
+        }*/
+    }
   ?>
   <script type="text/javascript">var switchTo5x=true;</script>
 <script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
@@ -152,3 +154,4 @@
   <?php print $page_bottom; ?>
 </body>
 </html>
+
