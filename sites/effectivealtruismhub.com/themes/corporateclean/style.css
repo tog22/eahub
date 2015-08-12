@@ -27,6 +27,7 @@ SPECIFIC PAGES
 - EA PROFILES 
 - EA ACTIONS: DONATING
 - GROUP PAGES
+- OFFERS PAGE
 
 *****************
 ****************/
@@ -1787,3 +1788,17 @@ body#tinymce {
 	clear: left;
 }
 
+/**************************************************/
+/** - OFFERS PAGE                                **/
+/**************************************************/
+
+.donation-register-list .username 
+{
+	font-weight: bold;
+}
+
+.donation-register-list .username {
+	font-family: 'Roboto Slab', Myriad Pro,"Lucida Grande","Lucida Sans Unicode",Segoe UI,Helvetica,Arial,sans-serif;
+	font-size: 1.25em;
+	margin-bottom: 0.5em;
+}
