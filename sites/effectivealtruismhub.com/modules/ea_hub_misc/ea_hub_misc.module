@@ -1,0 +1,51 @@
+<?php
+
+/*
+Taken from https://www.drupal.org/node/1571802
+*/
+
+
+/**
+ * Implements hook_entity_property_info_alter
+ */
+function ea_hub_misc_entity_property_info_alter(&$info) {
+  $info['user']['properties']['picture_hack'] = array(
+    'label' => t('Picture (Hack)'),
+    'type' => "uri",
+    'description' => t("the user profie picture (exposed via ea_hub_misc)"),
+    'getter callback' => 'ea_hub_misc_get_user_picture'
+    );
+
+  $info['user']['properties']['active_hack'] = array(
+    'label' => t('Active (Hack)'),
+    'type' => "boolean",
+    'description' => t("Is the user active? (exposed via ea_hub_misc"),
+    'getter callback' => 'ea_hub_misc_get_user_active'
+    );
+
+  return $info;
+}
+
+/**
+ * Returns the picture url of a user
+ */
+function ea_hub_misc_get_user_picture($user){
+    $uri = "";
+    if (isset($user->picture->uri)) {
+        $uri = file_create_url($user->picture->uri);
+    } elseif (module_exists('gravatar')) {
+        $uri = _gravatar_get_account_user_picture($user);
+    }
+
+    // if ($uri != "") {
+    //   $options = array('style_name' => 'thumbnail', 'uri' => $uri, 'alt' => 'Alt');
+    //   $img_html = theme('image_style', $options);
+    // }
+
+
+  return $uri;
+}
+
+function ea_hub_misc_get_user_active($user){
+    return $user->status == 1;
+}

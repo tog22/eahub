@@ -1704,6 +1704,43 @@ vertical-align: middle;
 font-weight: bold;
 }
 
+/** Profiles: search */
+
+.eap-search table td,
+.eap-search table tbody,
+.eap-search table tr.views-row-last
+ {
+	border: none;
+}
+
+
+.eap-search .views-field-picture-hack {
+	/* make images square */
+	overflow: hidden;  
+	height: 35px;
+	width: 35px;
+	padding: 5px;
+}
+
+.eap-search .user-picture 
+{
+	padding: 0;
+	float: none;
+	text-align: center;
+}
+
+.eap-search .user-picture a img {
+	/* tog - ideally we'd generate a smaller image rather than shrinking with css */
+	height: 35px;
+	width: 35px;
+}
+
+.eap-search .views-field-name
+{
+vertical-align: middle;
+font-weight: bold;
+}
+
 /* EA Profiles: user edit page */
 
 /** (hide text format selection under wysiwyg fields */

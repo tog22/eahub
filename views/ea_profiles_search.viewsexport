@@ -1,0 +1,166 @@
+$view = new view();
+$view->name = 'search_ea_profiles';
+$view->description = '';
+$view->tag = 'default';
+$view->base_table = 'search_api_index_user_name_index';
+$view->human_name = 'Search EA Profiles';
+$view->core = 7;
+$view->api_version = '3.0';
+$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+/* Display: Master */
+$handler = $view->new_display('default', 'Master', 'default');
+$handler->display->display_options['title'] = 'Search EA Profiles';
+$handler->display->display_options['css_class'] = 'eap-search';
+$handler->display->display_options['use_more_always'] = FALSE;
+$handler->display->display_options['access']['type'] = 'none';
+$handler->display->display_options['cache']['type'] = 'none';
+$handler->display->display_options['query']['type'] = 'views_query';
+$handler->display->display_options['exposed_form']['type'] = 'basic';
+$handler->display->display_options['pager']['type'] = 'full';
+$handler->display->display_options['pager']['options']['items_per_page'] = '10';
+$handler->display->display_options['pager']['options']['offset'] = '0';
+$handler->display->display_options['pager']['options']['id'] = '0';
+$handler->display->display_options['pager']['options']['quantity'] = '9';
+$handler->display->display_options['pager']['options']['expose']['items_per_page'] = TRUE;
+$handler->display->display_options['pager']['options']['expose']['items_per_page_options_all'] = TRUE;
+$handler->display->display_options['style_plugin'] = 'table';
+$handler->display->display_options['style_options']['row_class'] = 'eap-style-list-table ';
+$handler->display->display_options['style_options']['columns'] = array(
+  'uid' => 'name',
+  'name_1' => 'name_1',
+  'url' => 'url',
+  'picture_hack' => 'picture_hack',
+  'name' => 'name',
+  'active_hack' => 'active_hack',
+);
+$handler->display->display_options['style_options']['default'] = '-1';
+$handler->display->display_options['style_options']['info'] = array(
+  'uid' => array(
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'name_1' => array(
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'url' => array(
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'picture_hack' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'name' => array(
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+  'active_hack' => array(
+    'sortable' => 0,
+    'default_sort_order' => 'asc',
+    'align' => '',
+    'separator' => '',
+    'empty_column' => 0,
+  ),
+);
+/* Field: Indexed User: User ID */
+$handler->display->display_options['fields']['uid']['id'] = 'uid';
+$handler->display->display_options['fields']['uid']['table'] = 'search_api_index_user_name_index';
+$handler->display->display_options['fields']['uid']['field'] = 'uid';
+$handler->display->display_options['fields']['uid']['exclude'] = TRUE;
+$handler->display->display_options['fields']['uid']['link_to_entity'] = 0;
+/* Field: Indexed User: Name */
+$handler->display->display_options['fields']['name_1']['id'] = 'name_1';
+$handler->display->display_options['fields']['name_1']['table'] = 'search_api_index_user_name_index';
+$handler->display->display_options['fields']['name_1']['field'] = 'name';
+$handler->display->display_options['fields']['name_1']['label'] = 'Hidden_Name';
+$handler->display->display_options['fields']['name_1']['exclude'] = TRUE;
+$handler->display->display_options['fields']['name_1']['link_to_entity'] = 0;
+/* Field: Indexed User: URL */
+$handler->display->display_options['fields']['url']['id'] = 'url';
+$handler->display->display_options['fields']['url']['table'] = 'search_api_index_user_name_index';
+$handler->display->display_options['fields']['url']['field'] = 'url';
+$handler->display->display_options['fields']['url']['label'] = '';
+$handler->display->display_options['fields']['url']['exclude'] = TRUE;
+$handler->display->display_options['fields']['url']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['url']['display_as_link'] = FALSE;
+$handler->display->display_options['fields']['url']['link_to_entity'] = 0;
+/* Field: Indexed User: Picture (Hack) */
+$handler->display->display_options['fields']['picture_hack']['id'] = 'picture_hack';
+$handler->display->display_options['fields']['picture_hack']['table'] = 'search_api_index_user_name_index';
+$handler->display->display_options['fields']['picture_hack']['field'] = 'picture_hack';
+$handler->display->display_options['fields']['picture_hack']['label'] = '';
+$handler->display->display_options['fields']['picture_hack']['alter']['alter_text'] = TRUE;
+$handler->display->display_options['fields']['picture_hack']['alter']['text'] = '<div class="user-picture"><a href="[url]"><img typeof="foaf:Image" src="[picture_hack]" alt="[name_1]\'s picture" title="[name_1]\'s picture"></a></div>';
+$handler->display->display_options['fields']['picture_hack']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['picture_hack']['display_as_link'] = FALSE;
+$handler->display->display_options['fields']['picture_hack']['link_to_entity'] = 0;
+/* Field: Indexed User: Name */
+$handler->display->display_options['fields']['name']['id'] = 'name';
+$handler->display->display_options['fields']['name']['table'] = 'search_api_index_user_name_index';
+$handler->display->display_options['fields']['name']['field'] = 'name';
+$handler->display->display_options['fields']['name']['label'] = '';
+$handler->display->display_options['fields']['name']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['name']['link_to_entity'] = 1;
+/* Field: Indexed User: Active (Hack) */
+$handler->display->display_options['fields']['active_hack']['id'] = 'active_hack';
+$handler->display->display_options['fields']['active_hack']['table'] = 'search_api_index_user_name_index';
+$handler->display->display_options['fields']['active_hack']['field'] = 'active_hack';
+$handler->display->display_options['fields']['active_hack']['label'] = '';
+$handler->display->display_options['fields']['active_hack']['exclude'] = TRUE;
+$handler->display->display_options['fields']['active_hack']['element_label_colon'] = FALSE;
+$handler->display->display_options['fields']['active_hack']['not'] = 0;
+$handler->display->display_options['fields']['active_hack']['link_to_entity'] = 0;
+/* Filter criterion: Search: Fulltext search */
+$handler->display->display_options['filters']['search_api_views_fulltext']['id'] = 'search_api_views_fulltext';
+$handler->display->display_options['filters']['search_api_views_fulltext']['table'] = 'search_api_index_user_name_index';
+$handler->display->display_options['filters']['search_api_views_fulltext']['field'] = 'search_api_views_fulltext';
+$handler->display->display_options['filters']['search_api_views_fulltext']['exposed'] = TRUE;
+$handler->display->display_options['filters']['search_api_views_fulltext']['expose']['operator_id'] = 'search_api_views_fulltext_op';
+$handler->display->display_options['filters']['search_api_views_fulltext']['expose']['label'] = 'Search';
+$handler->display->display_options['filters']['search_api_views_fulltext']['expose']['operator'] = 'search_api_views_fulltext_op';
+$handler->display->display_options['filters']['search_api_views_fulltext']['expose']['identifier'] = 'search_api_views_fulltext';
+$handler->display->display_options['filters']['search_api_views_fulltext']['expose']['remember_roles'] = array(
+  2 => '2',
+  1 => 0,
+  3 => 0,
+  4 => 0,
+  5 => 0,
+  6 => 0,
+  7 => 0,
+  8 => 0,
+);
+$handler->display->display_options['filters']['search_api_views_fulltext']['fields'] = array(
+  'name' => 'name',
+);
+/* Filter criterion: Indexed User: Active (Hack) */
+$handler->display->display_options['filters']['active_hack']['id'] = 'active_hack';
+$handler->display->display_options['filters']['active_hack']['table'] = 'search_api_index_user_name_index';
+$handler->display->display_options['filters']['active_hack']['field'] = 'active_hack';
+$handler->display->display_options['filters']['active_hack']['value'] = '1';
+$handler->display->display_options['filters']['active_hack']['expose']['operator_id'] = '';
+$handler->display->display_options['filters']['active_hack']['expose']['label'] = 'Active (Hack)';
+$handler->display->display_options['filters']['active_hack']['expose']['operator'] = 'active_hack_op';
+$handler->display->display_options['filters']['active_hack']['expose']['identifier'] = 'active_hack';
+$handler->display->display_options['filters']['active_hack']['expose']['remember_roles'] = array(
+  2 => '2',
+  1 => 0,
+  3 => 0,
+  4 => 0,
+  5 => 0,
+  6 => 0,
+  7 => 0,
+  8 => 0,
+);
+
+/* Display: Page */
+$handler = $view->new_display('page', 'Page', 'page');
+$handler->display->display_options['path'] = 'user/profiles/search';
