@@ -56,6 +56,7 @@
     <script>
      //<![CDATA[
      window.groupsData = <?php include 'group-locations.json';?>;
+     window.individualsData = <?php include 'individual-locations.json';?>;
      //]]>
     </script>
 
