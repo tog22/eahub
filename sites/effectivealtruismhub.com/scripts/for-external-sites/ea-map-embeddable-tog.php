@@ -41,6 +41,7 @@
     width: 480px;
     height: 280px
     "></div>
+
         ==LARGE VERSION==
 	<div id="map" style="
 	width: 100%;
@@ -54,71 +55,55 @@
 
     <script>
      //<![CDATA[
-     window.markerData = <?php include 'group-locations.json';?>;
+     window.groupsData = <?php include 'group-locations.json';?>;
+     window.individualsData = <?php include 'individual-locations.json';?>;
      //]]>
     </script>
 
     <script>
-     var map = L.map('map', {
-       
-       
-       center: [25,13],
-       zoom: 2
-       
-       /* VARIANT SETTINGS
-       
-       ==Small map==
-       center: [5, 5],
-       zoom: 1
-       
-       // with html:
-    <div id="map" style="
-    position: relative;
-    
-    width: 480px;
-    height: 280px
-    "></div>
-       ============
-       
-       ==Large map==
-       center: [25,13],
-       zoom: 2
-       
-       // with html:
-	<div id="map" style="
-	width: 100%;
-	position: relative;
-	margin: 4em auto;
-	max-width: 1000px;
-	width: 1000px;
-	height: 570px;
-	"></div>
-       */
-       
-     });
-     L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
-       maxZoom: 18,
-       attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-		 '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-		 'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-       id: 'examples.map-i875mjb7'
-     }).addTo(map);
-     var markerData = window.markerData;
-     var markers = new L.MarkerClusterGroup();
+     var EAIndividualsCluster = new L.MarkerClusterGroup({maxClusterRadius: 60})
+         ,EAGroupCluster = new L.MarkerClusterGroup({maxClusterRadius: 60});
+
+
+     var markerData = window.individualsData;
+     for(var i = 0; i < markerData.length; i++) {
+       var currentMarkerData = markerData[i];
+       var latlng = currentMarkerData.latlng;
+       var popup = currentMarkerData.popup;
+       var marker = new L.marker(latlng).bindPopup(popup);
+       EAIndividualsCluster.addLayer(marker);
+     }
+      
+     var markerData = window.groupsData;
      for(var i = 0; i < markerData.length; i++) {
        var currentMarkerData = markerData[i];
        var latlng = currentMarkerData.latlng;
        var popup = currentMarkerData.popup;
        var marker = new L.marker(latlng, {icon: L.AwesomeMarkers.icon({icon: 'users', markerColor: 'orange', prefix: 'fa', iconColor: 'black'}) }).bindPopup(popup);
-       //marker.addTo(map);
-       markers.addLayer(marker);
+       EAGroupCluster.addLayer(marker);
      }
-     map.addLayer(markers);
+
+    var streets   = L.tileLayer('https://api.tiles.mapbox.com/v4/shared-ea-account.ee9fbb54/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoic2hhcmVkLWVhLWFjY291bnQiLCJhIjoiM2M3YjdmNzcwNDg1MmM5YjliMzIyNThkZTc2OWJjMWUifQ.-QAdcCLKxJZr8dtAofvdsw',{
+       maxZoom: 18,
+       attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+		            '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+		            'Imagery &copy <a href="http://mapbox.com">Mapbox</a>',
+     })
+
+     var map = L.map('map', {
+       center: [25,7],
+       zoom: 2,
+       layers: [streets,EAGroupCluster]
+     });
+
+    var baseMaps = {
+        "Individuals": EAIndividualsCluster,
+        "Groups": EAGroupCluster
+    };
+
+    L.control.layers(baseMaps, null,{collapsed:false,position:"bottomleft"}).addTo(map);
     </script>
 
-<!--
-          end pasted map block
--->
 		</div>
 	</body>
 </html>
