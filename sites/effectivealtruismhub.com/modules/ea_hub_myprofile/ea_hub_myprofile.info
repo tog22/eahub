@@ -1,0 +1,3 @@
+core = "7.x"
+description = "This Module contains custom blocks"
+name = "EAHub Custom Blocks"

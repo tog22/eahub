@@ -1,0 +1,33 @@
+<?php
+/**
+ * Implements hook_block_info().
+ */
+function ea_hub_myprofile_block_info() {
+  $blocks = array();
+  $blocks['my_profile_button'] = array(
+    'info' => t('My Profile/Logout Buttons'),
+  );
+  return $blocks;
+}
+
+function ea_hub_myprofile_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+  case 'my_profile_button':
+    $block['subject'] = '';
+    $block['content'] = _ea_hub_myprofile_block_content();
+    break;
+  }
+  return $block;
+}
+
+function _ea_hub_myprofile_block_content() {
+  global $user;
+  $user_id = $user->uid;
+  $output = "<div>
+    <div style=\"text-align: right; position: relative; top: -16px; \"><a href=\"/user/logout\" style=\"font-family: 'Roboto Slab'; text-transform: uppercase; text-align: right; font-size: 15px;float:right;margin-left:15px\"><img style=\"display:inline;\" src=\"/sites/effectivealtruismhub.com/media/images/icons-etc/lock.png\" alt=\"Profile\" /> Log Out</a></div>
+    <div style=\"text-align: right; position: relative; top: -16px;\"><a href=\"/user/{$user_id}\" style=\"font-family: 'Roboto Slab'; text-transform: uppercase; text-align: right; font-size: 15px; float:right;\">My Profile</a></div>
+    </div>";
+  return $output;
+}
