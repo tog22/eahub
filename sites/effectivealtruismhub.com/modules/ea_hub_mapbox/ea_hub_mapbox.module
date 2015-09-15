@@ -1,0 +1,63 @@
+<?php
+/**
+ * Implements hook_block_info().
+ */
+function ea_hub_mapbox_block_info() {
+  $blocks = array();
+  $blocks['eahub_maps'] = array(
+    'info' => t('EAHub Maps'),
+  );
+  return $blocks;
+}
+
+function ea_hub_mapbox_block_view($delta = '') {
+  $block = array();
+
+  $users =  file_get_contents(drupal_get_path('module', 'ea_hub_mapbox') . '/json/users.json');
+
+  $groups = file_get_contents(drupal_get_path('module', 'ea_hub_mapbox') . '/json/groups.json');
+
+  switch ($delta) {
+  case 'eahub_maps':
+    $block['subject'] = '';
+    $block['content'] = array(
+	'#markup' => '<div id="map" style="position:relative;margin:2em auto;max-width:1000px;width:940px;height: 570px;"></div>'.
+		     '<script> window.markerData = ' . $users . '; window.groups = ' . $groups .
+		     '</script>' 
+    );
+    $block['content']['#attached']['css'][] = array(
+        'data' => 'http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css',
+        'type' => 'external',
+    );
+    $block['content']['#attached']['css'][] = array(
+        'data' => 'http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/MarkerCluster.Default.css',
+        'type' => 'external',
+    );
+    $block['content']['#attached']['css'][] = array(
+        'data' => 'http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css',
+        'type' => 'external',
+    );
+    $block['content']['#attached']['css'][] = array(
+        'data' => 'http://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.0/leaflet.awesome-markers.css',
+        'type' => 'external',
+    );
+   $block['content']['#attached']['js'][] = array(
+       'data' => 'http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js',
+       'type' => 'external',
+   );  
+    $block['content']['#attached']['js'][] = array(
+	'data' => 'http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/leaflet.markercluster.js',
+	'type' => 'external',
+    );
+    $block['content']['#attached']['js'][] = array(
+        'data' => 'http://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.0/leaflet.awesome-markers.js',
+        'type' => 'external',
+    );
+    $block['content']['#attached']['js'][] = array(
+	'data' => drupal_get_path('module', 'ea_hub_mapbox') . '/js/mapbox_map.js',
+	'type' => 'file',
+    );
+    break;
+  }
+  return $block;
+}
