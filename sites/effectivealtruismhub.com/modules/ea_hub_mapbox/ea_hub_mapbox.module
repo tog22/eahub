@@ -13,9 +13,9 @@ function ea_hub_mapbox_block_info() {
 function ea_hub_mapbox_block_view($delta = '') {
   $block = array();
 
-  $users =  file_get_contents(drupal_get_path('module', 'ea_hub_mapbox') . '/eas_json/users.json');
+  $users =  file_get_contents(drupal_get_path('module', 'ea_hub_mapbox') . '/json/users.json');
 
-  $groups = file_get_contents(drupal_get_path('module', 'ea_hub_mapbox') . '/eas_json/groups.json');
+  $groups = file_get_contents(drupal_get_path('module', 'ea_hub_mapbox') . '/json/groups.json');
 
   switch ($delta) {
   case 'eahub_maps':
