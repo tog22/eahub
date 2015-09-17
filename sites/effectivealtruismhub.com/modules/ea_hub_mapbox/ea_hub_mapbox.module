@@ -22,7 +22,7 @@ function ea_hub_mapbox_block_view($delta = '') {
     $block['subject'] = '';
     $block['content'] = array(
 	'#markup' => '<div id="map" style="position:relative;margin:2em auto;max-width:1000px;width:940px;height: 570px;"></div>'.
-		     '<script> window.markerData = ' . $users . '; window.groups = ' . $groups .
+		     '<script> window.individualsData = ' . $users . '; window.groupsData = ' . $groups .
 		     '</script>' 
     );
     $block['content']['#attached']['css'][] = array(
