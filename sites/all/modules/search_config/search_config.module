@@ -29,29 +29,35 @@
 function search_config_node_settings() {
   $settings = variable_get('search_config', array());
   $settings += array(
-    'forms' => array(
-      'toggle_forms' => 0,            // Show adv if both forms are present
-      'move_keyword_search' => 0,     // Move keyword search into adv form
-      'advanced_populate' => 0,       // Try and repopulate the adv form
-      'advanced_expand' => 'default', // Control the presentation of adv form
-      // Controls all 3 'Containing...' fields.
-      'remove_containing_wrapper' => 'default',
-    ),
-    'fields' => array(
-      'containing_any' => array(),
-      'containing_phrase' => array(),
-      'containing_none' => array(),
-      'types' => array(),
-      'category' => array(),
-    ),
-    'restrictions' => array(
-      'admin_bypass' => 1,
-    ),
-    // 10 is hardcoded in core.
-    'results' => array(
-      'limit' => '10',
-    ),
+    'forms' => array(),
+    'fields' => array(),
+    'restrictions' => array(),
+    'results' => array(),
   );
+
+  $settings['forms'] += array(
+    'toggle_forms' => 0,            // Show adv if both forms are present
+    'move_keyword_search' => 0,     // Move keyword search into adv form
+    'advanced_populate' => 0,       // Try and repopulate the adv form
+    'advanced_expand' => 'default', // Control the presentation of adv form
+    // Controls all 3 'Containing...' fields.
+    'remove_containing_wrapper' => 'default',
+  );
+  $settings['fields'] += array(
+    'containing_any' => array(),
+    'containing_phrase' => array(),
+    'containing_none' => array(),
+    'types' => array(),
+    'category' => array(),
+    'language' => array(),
+  );
+  $settings['results'] += array(
+    'limit' => '10',
+  );
+  $settings['restrictions'] += array(
+    'admin_bypass' => 1,
+  );
+
   foreach ($settings['fields'] as $field => $info) {
     $settings['fields'][$field] += array(
       'remove' => 0,                  // Hides the field

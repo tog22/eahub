@@ -133,6 +133,7 @@ function _search_config_form_search_admin_settings_alter(&$form, $form_state) {
     'containing_none' => t('Containing none of the words'),
     'types' => t('Only of the type(s)'),
     'category' => t('By category'), // @todo: Find correct field naming
+    'language' => t('Languages'),
   );
   foreach ($fields as $key => $label) {
     $form['content_node_search_config']['fields'][$key] = array(

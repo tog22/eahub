@@ -92,9 +92,9 @@ function _search_config_advanced_form(&$form, $form_state) {
   $fkeys = &$form['basic']['keys'];
   $fkeywords = &$form['advanced']['keywords'];
   $ftype = &$form['advanced']['type'];
-  $flang = NULL;
   if (isset($form['advanced']['language'])) {
-    $flang = &$form['advanced']['language'];
+    $fs_language = $settings['fields']['language'];
+    $form['advanced']['language']['#access'] = search_config_get_access($fs_language['remove'], $fs_language['roles']);
   }
 
   // Change the form fieldset.
