@@ -49,3 +49,42 @@ function ea_hub_misc_get_user_picture($user){
 function ea_hub_misc_get_user_active($user){
     return $user->status == 1;
 }
+
+/*
+*  Adds url redirects for authenticated users to point to their profile2 pages instead of the webforms nodes.
+*  Note: The node path is retrieved from its URL alias.
+*/
+function ea_hub_misc_menu_alter(&$items) {
+  $donationsPastAlias = 'donations/past/add';
+  $donationsPastPath = drupal_lookup_path("source", $donationsPastAlias);
+  $items[$donationsPastPath] = getItem('profile2_auth_user_reditect','donations');
+
+  $donationsPlansAlias = 'donations/plans/add';
+  $donationsPlansPath = drupal_lookup_path("source", $donationsPlansAlias);
+  $items[$donationsPlansPath] = getItem('profile2_auth_user_reditect','donations');
+
+  $mapAddAlias = 'map/add';
+  $mapAddPath = drupal_lookup_path("source", $mapAddAlias);
+  $items[$mapAddPath] = getItem('profile2_auth_user_reditect','basic_information');
+
+  return $items;
+}
+
+function getItem($callback_name,$profile2_url){
+  return array(
+    'page callback' => $callback_name,
+    'page arguments' => array(1,$profile2_url),
+    'access callback' => TRUE,
+  );
+}
+
+function profile2_auth_user_reditect($nodeid,$profile2_url){
+  global $user;
+  $userid = $user->uid;
+
+  if( user_is_logged_in() ){
+    drupal_goto('user/' . $userid . '/edit/' .$profile2_url);
+  }else{
+    return node_view(node_load($nodeid));
+  }
+}
