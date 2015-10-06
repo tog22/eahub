@@ -57,15 +57,15 @@ function ea_hub_misc_get_user_active($user){
 function ea_hub_misc_menu_alter(&$items) {
   $donationsPastAlias = 'donations/past/add';
   $donationsPastPath = drupal_lookup_path("source", $donationsPastAlias);
-  $items[$donationsPastPath] = getItem('profile2_auth_user_reditect','donations');
+  $items[$donationsPastPath] = getItem('profile2_auth_user_redirect','donations');
 
   $donationsPlansAlias = 'donations/plans/add';
   $donationsPlansPath = drupal_lookup_path("source", $donationsPlansAlias);
-  $items[$donationsPlansPath] = getItem('profile2_auth_user_reditect','donations');
+  $items[$donationsPlansPath] = getItem('profile2_auth_user_redirect','donations');
 
   $mapAddAlias = 'map/add';
   $mapAddPath = drupal_lookup_path("source", $mapAddAlias);
-  $items[$mapAddPath] = getItem('profile2_auth_user_reditect','basic_information');
+  $items[$mapAddPath] = getItem('profile2_auth_user_redirect','basic_information');
 
   return $items;
 }
@@ -78,7 +78,7 @@ function getItem($callback_name,$profile2_url){
   );
 }
 
-function profile2_auth_user_reditect($nodeid,$profile2_url){
+function profile2_auth_user_redirect($nodeid,$profile2_url){
   global $user;
   $userid = $user->uid;
 
